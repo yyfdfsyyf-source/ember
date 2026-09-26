@@ -1,0 +1,27 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Ember 桌面端默认能力：核心 API + 无边框窗口的自绘标题栏（拖动/最小化/最大化/关闭）+ 只允许拉起自带的 agent sidecar（最小权限，不开 open/execute 通配）",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:default",
+    "core:window:allow-start-dragging",
+    "core:window:allow-minimize",
+    "core:window:allow-toggle-maximize",
+    "core:window:allow-close",
+    {
+      "identifier": "shell:allow-spawn",
+      "allow": [
+        {
+          "name": "binaries/agent",
+          "sidecar": true,
+          "args": ["--serve"]
+        }
+      ]
+    },
+    "shell:allow-stdin-write",
+    "shell:allow-kill"
+  ]
+}

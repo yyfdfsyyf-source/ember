@@ -1,0 +1,48 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "Ember",
+  "version": "0.10.0",
+  "identifier": "dev.ember.desktop",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "npm run sidecar && npm run dev",
+    "beforeBuildCommand": "npm run sidecar && npm run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Ember",
+        "width": 1440,
+        "height": 900,
+        "minWidth": 960,
+        "minHeight": 640,
+        "resizable": true,
+        "fullscreen": false,
+        "center": true,
+        "decorations": false,
+        "transparent": true,
+        "shadow": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "externalBin": ["binaries/agent"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "android": {
+      "debugApplicationIdSuffix": ".debug"
+    }
+  }
+}

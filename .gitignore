@@ -1,0 +1,43 @@
+# ---- 本机配置与密钥：永不入库 ------------------------------------------------
+settings.json
+settings.json.bak*
+.agent_first_run
+
+# ---- 运行期产物（会话/轨迹/截图都是本机的）----------------------------------
+traj.jsonl
+traj-*.jsonl
+sessions/
+browser_screenshots/
+
+# ---- 构建产物 ----------------------------------------------------------------
+/out/
+/build/
+/out-linux/
+/desktop/node_modules/
+/desktop/dist/
+/desktop/src-tauri/target/
+/desktop/src-tauri/binaries/
+/desktop/src-tauri/gen/
+/desktop/*.log
+/desktop/src-tauri/2
+
+# ---- 本地暂存与手工备份（不属于源码）----------------------------------------
+/scratch/
+/backups/
+/releases/
+*.zip
+*.tar.gz
+
+# ---- 编辑器 / 系统 ------------------------------------------------------------
+.vscode/
+Thumbs.db
+Desktop.ini
+
+# ---- 审阅截图（本地验收产物，不属于源码）------------------------------------
+_shots/
+
+# ---- 第三方参考副本：本机留着看，不随本仓库分发-------------------------------
+/reference/
+
+# Vite 本地覆盖（含机器路径，不入库）
+*.local

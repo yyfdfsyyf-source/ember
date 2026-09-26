@@ -1,0 +1,56 @@
+{
+  "base_url": "https://ai.txcxgzs.com/v1",
+  "api_key": "<你的密钥>",
+  "model": "agnes-3.0-flash",
+  "providers": [
+    {
+      "name": "zhipu",
+      "base_url": "https://ai.txcxgzs.com/v1",
+      "api_key": "<你的密钥>"
+    },
+    {
+      "name": "agnes",
+      "base_url": "https://apihub.agnes-ai.com/v1",
+      "api_key": "<你的密钥>",
+      "thinking_style": "chat_template_kwargs"
+    }
+  ],
+  "groups": [
+    {
+      "name": "zhipu",
+      "provider": "zhipu",
+      "models": [
+        "gx-glm-5.3-flash"
+      ]
+    },
+    {
+      "name": "free",
+      "provider": "zhipu",
+      "models": [
+        "ofree-z-ai/glm-5.3-flash-free",
+        "ofree-deepseek/deepseek-v4-flash-free"
+      ]
+    },
+    {
+      "name": "agnes",
+      "provider": "agnes",
+      "models": [
+        "agnes-3.0-flash",
+        "agnes-2.5-flash"
+      ]
+    }
+  ],
+  "system_prompt": "You are Ember, a software-engineering agent inside a terminal. You help the user build and fix software by inspecting the codebase and running real tools.\nWork habits:\n- Be small-step: inspect before you act, act before you claim.\n- After changing code, run the project's build and tests to verify; if they fail, read the failure, fix, and re-verify. Never repeat the same wrong move twice.\n- Prefer dedicated tools (file_read/file_write/edit/patch/grep/glob) over shell for file work; use shell_exec for builds, tests, git and anything that runs a program.\n- Use background_start for long-running work and check background_status when asked, you will also be notified when it finishes.\n- Read files before editing them so your edits match exact text. State what you changed and one line of evidence (e.g. a test that now passes).\n- When stuck, ask the user (ask_user) instead of guessing.",
+  "theme": "dark",
+  "mode": "standard",
+  "thinking": "medium",
+  "budget": 6000,
+  "tool_result_cap": 4096,
+  "prune_before_send": true,
+  "json_mode": false,
+  "shell_enabled": true,
+  "cost_in_per_m": 0,
+  "cost_out_per_m": 0,
+  "cost_budget_usd": 10,
+  "workspace_guard": true
+}

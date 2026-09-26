@@ -1,0 +1,184 @@
+/* ============================================================================
+   Ember Desktop · 设计 token（v2）
+   规范来源：/FRONTEND_DESIGN.md。改这里之前先读 3.1–3.7。
+   规则：本文件只放 token 与动效曲线，不放组件样式（见 app.css）。
+   禁令：全项目不得出现 border / border-radius / box-shadow（除 --win 模糊层）。
+   ========================================================================== */
+
+/* --- 主题切换：注册颜色变量，让主题交叉淡入是"变量级"过渡，而不是逐属性插值 --- */
+@property --win { syntax: "<color>"; inherits: true; initial-value: rgba(14, 15, 18, .72); }
+@property --s0 { syntax: "<color>"; inherits: true; initial-value: #0E0F12; }
+@property --s1 { syntax: "<color>"; inherits: true; initial-value: #171A1F; }
+@property --s2 { syntax: "<color>"; inherits: true; initial-value: #20242B; }
+@property --s3 { syntax: "<color>"; inherits: true; initial-value: #2B3038; }
+@property --hover { syntax: "<color>"; inherits: true; initial-value: rgba(255, 255, 255, .04); }
+@property --press { syntax: "<color>"; inherits: true; initial-value: rgba(255, 255, 255, .07); }
+@property --sel { syntax: "<color>"; inherits: true; initial-value: rgba(255, 106, 43, .14); }
+@property --text-1 { syntax: "<color>"; inherits: true; initial-value: #E9EBF0; }
+@property --text-2 { syntax: "<color>"; inherits: true; initial-value: #A2A8B4; }
+@property --text-3 { syntax: "<color>"; inherits: true; initial-value: #7A828F; }
+@property --text-inv { syntax: "<color>"; inherits: true; initial-value: #0E0F12; }
+@property --accent { syntax: "<color>"; inherits: true; initial-value: #FF6A2B; }
+@property --on-color { syntax: "<color>"; inherits: true; initial-value: #0E0F12; }
+@property --h2 { syntax: "<color>"; inherits: true; initial-value: #5AA9FF; }
+@property --h3 { syntax: "<color>"; inherits: true; initial-value: #38D39F; }
+@property --h4 { syntax: "<color>"; inherits: true; initial-value: #F7B955; }
+@property --h5 { syntax: "<color>"; inherits: true; initial-value: #FF5C57; }
+@property --h6 { syntax: "<color>"; inherits: true; initial-value: #F06BB0; }
+@property --h7 { syntax: "<color>"; inherits: true; initial-value: #A98BFF; }
+@property --h8 { syntax: "<color>"; inherits: true; initial-value: #A8D65C; }
+@property --data-2 { syntax: "<color>"; inherits: true; initial-value: #3A404A; }
+
+/* ------------------------------------------------------------------ 深色（同级主题 A）
+   面层 L*：4.32 / 9.16 / 14.08 / 19.69，相邻 ΔL* = 4.83 / 4.92 / 5.61（阈值 3.5） */
+:root {
+  --win: rgba(14, 15, 18, .72);
+  --s0: #0E0F12;
+  --s1: #171A1F;
+  --s2: #20242B;
+  --s3: #2B3038;
+  --hover: rgba(255, 255, 255, .04);
+  --press: rgba(255, 255, 255, .07);
+  --sel: rgba(255, 106, 43, .14);
+  --text-1: #E9EBF0;
+  --text-2: #A2A8B4;
+  --text-3: #7A828F;
+  --text-inv: #0E0F12;
+  --accent: #FF6A2B;
+  --on-color: #0E0F12;
+  --h2: #5AA9FF;
+  --h3: #38D39F;
+  --h4: #F7B955;
+  --h5: #FF5C57;
+  --h6: #F06BB0;
+  --h7: #A98BFF;
+  --h8: #A8D65C;
+  --data-2: #3A404A;   /* 中性数据填充（对比序列中的"非焦点"一项） */
+  color-scheme: dark;
+}
+
+/* ------------------------------------------------------------------ 浅色（同级主题 B，暖纸色）
+   面层 L*：88.83 / 92.40 / 96.16 / 100，相邻 ΔL* = 3.57 / 3.77 / 3.84（阈值 2.5） */
+:root[data-theme="light"] {
+  --win: rgba(232, 229, 221, .68);
+  --s0: #E2DFD6;
+  --s1: #ECE9E2;
+  --s2: #F5F4F0;
+  --s3: #FFFFFF;
+  --hover: rgba(20, 18, 14, .05);
+  --press: rgba(20, 18, 14, .09);
+  --sel: rgba(194, 72, 23, .12);
+  --text-1: #14161B;
+  --text-2: #555B67;
+  --text-3: #767C87;
+  --text-inv: #FFFFFF;
+  --accent: #C24817;
+  --on-color: #FFFFFF;
+  --h2: #2B5BD7;
+  --h3: #0C7F5D;
+  --h4: #8A6100;
+  --h5: #C4342E;
+  --h6: #B23A7D;
+  --h7: #5F43C4;
+  --h8: #4F7A0F;
+  --data-2: #CBC6BA;   /* 中性数据填充：浅色下若用 --s3（白）在卡片上看不见 */
+  color-scheme: light;
+}
+
+/* 主题交叉淡入 240ms（3.7）：变量级过渡，尺寸位置不动 */
+:root {
+  --theme-fade: 240ms;
+  transition: --win var(--theme-fade) var(--ease-standard),
+              --s0 var(--theme-fade) var(--ease-standard),
+              --s1 var(--theme-fade) var(--ease-standard),
+              --s2 var(--theme-fade) var(--ease-standard),
+              --s3 var(--theme-fade) var(--ease-standard),
+              --hover var(--theme-fade) var(--ease-standard),
+              --press var(--theme-fade) var(--ease-standard),
+              --sel var(--theme-fade) var(--ease-standard),
+              --text-1 var(--theme-fade) var(--ease-standard),
+              --text-2 var(--theme-fade) var(--ease-standard),
+              --text-3 var(--theme-fade) var(--ease-standard),
+              --text-inv var(--theme-fade) var(--ease-standard),
+              --accent var(--theme-fade) var(--ease-standard),
+              --on-color var(--theme-fade) var(--ease-standard),
+              --h2 var(--theme-fade) var(--ease-standard),
+              --h3 var(--theme-fade) var(--ease-standard),
+              --h4 var(--theme-fade) var(--ease-standard),
+              --h5 var(--theme-fade) var(--ease-standard),
+              --h6 var(--theme-fade) var(--ease-standard),
+              --h7 var(--theme-fade) var(--ease-standard),
+              --h8 var(--theme-fade) var(--ease-standard),
+              --data-2 var(--theme-fade) var(--ease-standard);
+}
+
+/* ------------------------------------------------------------------ 排版 */
+:root {
+  --font-display: "Archivo", "MiSans", "HarmonyOS Sans SC", sans-serif;
+  --font-ui: "MiSans", "HarmonyOS Sans SC", "Source Han Sans SC", "Microsoft YaHei UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+
+  --t-meta: 11px/16px;
+  --t-caption: 12px/18px;
+  --t-body: 14px/22px;
+  --t-title: 16px/26px;
+  --t-section: 20px/28px;
+  --t-kpi: 28px/34px;
+
+  --w-400: 400;
+  --w-500: 500;
+  --w-600: 600;
+}
+
+/* ------------------------------------------------------------------ 间距 / 几何 / 布局 */
+:root {
+  --sp-1: 4px;   /* 半格：只用于图元内部 */
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+
+  --bar: 4px;          /* 状态色条 / 选中条 */
+  --dot: 6px;          /* 状态圆点 */
+  --scroll: 4px;
+
+  --h-top: 44px;
+  --h-status: 28px;
+  --h-row: 40px;
+  --h-ctl: 32px;
+  --w-sessions: 248px;
+  --w-sessions-mini: 56px;
+  --w-inspector: 320px;
+  --content-max: 720px;
+}
+
+/* ------------------------------------------------------------------ 动效 */
+:root {
+  --ease-standard: cubic-bezier(.2, 0, 0, 1);
+  --ease-enter: cubic-bezier(.05, .7, .1, 1);
+  --ease-exit: cubic-bezier(.3, 0, .8, .15);
+
+  --d-1: 90ms;    /* 悬停/按下 */
+  --d-2: 150ms;   /* 面板、列表、展开 */
+  --d-3: 240ms;   /* 页面级、主题切换 */
+  --d-4: 400ms;   /* 图表入场 */
+}
+
+/* 降级：减少动效时取消位移/旋转/呼吸，只留 90ms 透明度切换 */
+@media (prefers-reduced-motion: reduce) {
+  :root { --theme-fade: 90ms; }
+  *, *::before, *::after {
+    animation: none !important;
+    transition-duration: 90ms !important;
+    transition-property: opacity !important;
+  }
+  .rise, .slide-l, .slide-r { transform: none !important; }
+}
+
+/* 静态审阅模式：?static=1 —— 取消交错延迟，便于逐屏像素对照 */
+:root[data-static] *, :root[data-static] *::before, :root[data-static] *::after {
+  animation-delay: 0s !important;
+  transition-duration: 0s !important;
+}

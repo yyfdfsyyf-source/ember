@@ -1,0 +1,29 @@
+{
+  "name": "ember-desktop",
+  "private": true,
+  "version": "0.10.0",
+  "type": "module",
+  "description": "Ember Desktop — Tauri 前端（设计系统 v2 的 React 实现）",
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "sidecar": "node scripts/sync-sidecar.mjs",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "2.11.1",
+    "@tauri-apps/plugin-shell": "2.3.6",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.11.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.1",
+    "typescript": "7.0.2",
+    "vite": "8.3.1"
+  }
+}

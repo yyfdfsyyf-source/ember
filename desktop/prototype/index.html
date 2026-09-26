@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme-mode="dark"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ember Desktop · 静态原型（设计系统 v2）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<!-- 模拟桌面：只放中性直角矩形，不放色相。真机上是系统 Mica/Acrylic 之后的真实桌面 -->
+<svg class="desk" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  <rect width="1600" height="1000" fill="var(--s0)"></rect>
+  <rect x="1080" y="120" width="520" height="360" fill="var(--s1)"></rect>
+  <rect x="0" y="640" width="640" height="360" fill="var(--s1)"></rect>
+</svg>
+
+<div class="win">
+
+  <!-- ============================================================ 顶栏 44px -->
+  <header class="topbar" data-tauri-drag-region="">
+    <div class="brand">
+      <!-- 品牌图元：直角矩形 + 色条 + 圆（字标待定，先用图元占位） -->
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+        <rect width="16" height="16" fill="var(--s3)"></rect>
+        <rect y="12" width="16" height="4" fill="var(--accent)"></rect>
+        <circle cx="11" cy="5" r="3" fill="var(--text-2)"></circle>
+      </svg>
+      <b>Ember</b><span>Desktop</span>
+    </div>
+
+    <nav class="switch" aria-label="界面切换">
+      <button class="ctl" data-screen-btn="chat" aria-current="false" title="对话">
+        <svg width="16" height="16" viewBox="0 0 16 16"><rect class="on" width="16" height="10"></rect><polygon class="on" points="3,10 8,10 3,15"></polygon></svg>
+      </button>
+      <button class="ctl" data-screen-btn="usage" title="用量" aria-current="true">
+        <svg width="16" height="16" viewBox="0 0 16 16"><rect class="off" x="0" y="9" width="4" height="7"></rect><rect class="off" x="6" y="5" width="4" height="11"></rect><rect class="off" x="12" y="0" width="4" height="16"></rect></svg>
+      </button>
+      <button class="ctl" data-screen-btn="empty" title="空态" aria-current="false">
+        <svg width="16" height="16" viewBox="0 0 16 16"><rect class="off" width="10" height="10"></rect><polygon class="off" points="16,16 16,7 7,16"></polygon></svg>
+      </button>
+      <button class="ctl" data-screen-btn="spec" title="规范自检" aria-current="false">
+        <svg width="16" height="16" viewBox="0 0 16 16"><rect class="off" width="7" height="7"></rect><circle class="off" cx="12" cy="12" r="4"></circle><polygon class="off" points="0,16 7,16 0,9"></polygon></svg>
+      </button>
+    </nav>
+
+    <div class="spacer"></div>
+
+    <div class="chip"><span class="dot ok"></span>agnes-3.0-flash<b>[think:medium]</b></div>
+
+    <button class="ctl" id="themeBtn" title="切换深浅主题（240ms 交叉淡入）">
+      <svg width="16" height="16" viewBox="0 0 16 16"><rect x="0" y="1" width="7" height="14" fill="var(--accent)"></rect><rect x="8" y="1" width="7" height="14" fill="var(--text-2)"></rect></svg>
+    </button>
+
+    <div style="display:flex">
+      <div class="wctl" title="最小化"><svg width="16" height="16" viewBox="0 0 16 16"><rect x="3" y="11" width="10" height="2"></rect></svg></div>
+      <div class="wctl" title="最大化"><svg width="16" height="16" viewBox="0 0 16 16"><rect x="4" y="4" width="8" height="8"></rect></svg></div>
+      <div class="wctl close" title="关闭"><svg width="16" height="16" viewBox="0 0 16 16"><rect x="3" y="3" width="10" height="10"></rect></svg></div>
+    </div>
+  </header>
+
+  <div class="body">
+
+    <!-- ======================================================== 会话栏 248px -->
+    <aside class="rail">
+      <div class="rail-head">
+        <span>会话</span>
+        <button class="ctl" title="新建会话" style="width: 24px; height: 24px;">
+          <svg width="14" height="14" viewBox="0 0 14 14"><rect class="off" x="0" y="6" width="14" height="2"></rect><rect class="off" x="6" y="0" width="2" height="14"></rect></svg>
+        </button>
+      </div>
+
+      <div class="rail-list">
+        <div class="sess" aria-current="true">
+          <div class="t"><span class="dot run"></span><span>web_fetch 超时可配置</span></div>
+          <span class="meta">now</span>
+        </div>
+        <div class="sess">
+          <div class="t"><span class="dot ok"></span><span>修 test_search 的路径大小写</span></div>
+          <span class="meta">2h</span>
+        </div>
+        <div class="sess">
+          <div class="t"><span class="dot"></span><span>分析 traj.jsonl 里的失败工具</span></div>
+          <span class="meta">昨天</span>
+        </div>
+        <div class="sess">
+          <div class="t"><span class="dot bad"></span><span>Linux 交叉编译 libcurl 链接失败</span></div>
+          <span class="meta">周三</span>
+        </div>
+        <div class="sess">
+          <div class="t"><span class="dot"></span><span>给 RAG 索引加中文分词</span></div>
+          <span class="meta">周一</span>
+        </div>
+      </div>
+
+      <div class="rail-foot">
+        <div class="rail-head" style="padding-bottom:8px"><span>工作区</span></div>
+        <div class="ws-item" aria-current="true">
+          <svg width="4" height="16" viewBox="0 0 4 16"><rect width="4" height="16" fill="var(--h6)"></rect></svg>
+          <span>01_AGENT_CLI</span>
+        </div>
+        <div class="ws-item">
+          <svg width="4" height="16" viewBox="0 0 4 16"><rect width="4" height="16" fill="var(--h7)"></rect></svg>
+          <span>demo-app</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ======================================================== 主区 -->
+    <section class="stage">
+
+      <!-- ------------------------------------------------ 屏 1：对话 -->
+      <div class="screen" data-screen="chat">
+        <div class="chat">
+        <div class="flow">
+        <div class="col">
+
+          <div class="msg-user rise" style="--i:0">
+            把 web_fetch 的超时改成可配置的，默认别变；顺便看看还有哪些地方写死了超时值。
+          </div>
+
+          <div class="msg">
+            <div class="msg-head slide-l" style="--i:1">
+              <span class="dot info"></span><span class="who">Ember</span><span class="at">14:32</span>
+            </div>
+
+            <details class="think slide-l" style="--i:2">
+              <summary><span class="dot info"></span><span class="lbl">思考 1.4s</span><span class="tri"></span></summary>
+              <div class="txt">超时值可能在 http.cpp 的请求层与 tools.cpp 的工具层各有一份；先定位再统一到配置项，避免只改一处。</div>
+            </details>
+
+            <p class="rise" style="--i:3">先定位写死的超时，再决定改哪一层。</p>
+
+            <div class="tool rise" style="--i:4;--fam:var(--h7)" data-open="true">
+              <div class="tool-head">
+                <span class="dot ok"></span><span class="name">file_read</span>
+                <span class="arg">agent/src/tools.cpp · 检索 timeout</span>
+                <span class="delta"></span><span class="tri"></span>
+              </div>
+              <div class="tool-body" style="height: auto;">
+                <div class="code">
+                  <div class="code-head"><span class="lang">grep · 3 hits</span></div>
+                  <pre>http.cpp:88   <span class="tok-c">// hardcoded request timeout</span>
+tools.cpp:2803 <span class="tok-k">int</span> timeoutMs = <span class="tok-s">30000</span>;
+browser.cpp:141 <span class="tok-k">int</span> timeoutMs = <span class="tok-s">15000</span>;</pre>
+                </div>
+              </div>
+            </div>
+
+            <p class="rise" style="--i:5">超时确实分散在三处。我把工具层与请求层统一读同一个配置项，浏览器层单独保留（CDP 语义不同）。</p>
+
+            <div class="code rise" style="--i:6">
+              <div class="code-head"><span class="lang">agent/src/tools.cpp</span><span class="mono" style="color:var(--text-3)">patch</span></div>
+              <pre><span class="tok-c">// 工具层与请求层共用同一超时；0 = 不限</span>
+<span class="tok-k">int</span> <span class="tok-f">toolTimeoutMs</span>(Settings <span class="tok-k">const</span>&amp; s) {
+  <span class="tok-k">return</span> s.timeoutMs &gt; <span class="tok-s">0</span> ? s.timeoutMs : <span class="tok-s">30000</span>;
+}</pre>
+            </div>
+
+            <div class="tool rise" style="--i:7;--fam:var(--h6)" data-open="false">
+              <div class="tool-head">
+                <span class="dot run"></span><span class="name">shell_exec</span>
+                <span class="arg">g++ -std=c++20 -O2 构建 + 跑 test_tools …</span>
+                <span class="tri"></span>
+              </div>
+              <div class="tool-body" style="height: 0px;">
+                <div class="code"><pre>正在编译 26 个单元…</pre></div>
+              </div>
+            </div>
+
+            <p class="rise" style="--i:8">改动已落在两处：配置项在 settings.json 的 <code>tool_timeout_ms</code>，
+              <span data-stream="默认 30000，保持原有行为不变；浏览器层维持 15s。">默认 30000，保持原有行为不变；浏览器层维持 15s。</span><span class="caret"></span></p>
+          </div>
+
+        </div><!-- /col -->
+        </div><!-- /flow -->
+
+        <div class="dock">
+          <div class="composer slide-r" style="--i:9">
+            <span class="ph">接着输入，或 <b>/help</b> 看全部命令</span>
+            <button class="send" title="发送">
+              <svg width="18" height="18" viewBox="0 0 18 18"><polygon points="3,2 16,9 3,16"></polygon></svg>
+            </button>
+          </div>
+          <div class="hints">Enter 发送 · Shift+Enter 换行 · Ctrl+P 命令面板 · 工具调用可点击展开</div>
+        </div>
+        </div><!-- /chat -->
+      </div>
+
+      <!-- ------------------------------------------------ 屏 2：用量 -->
+      <div class="screen" data-screen="usage" data-active="">
+        <div class="col">
+          <div class="kpis rise" style="--i:0">
+            <div class="kpi"><div class="k">本月 token</div><div class="v">1.24<span class="u">M</span></div></div>
+            <div class="kpi secondary"><div class="k">成本</div><div class="v">$3.18</div></div>
+            <div class="kpi secondary"><div class="k">缓存命中</div><div class="v">62<span class="u">%</span></div></div>
+          </div>
+
+          <div class="card rise" style="--i:1">
+            <h4>近 7 天 token</h4>
+            <svg class="chart" width="100%" viewBox="0 0 640 180" role="img" aria-label="近 7 天 token 用量">
+              <line x1="0" y1="150" x2="640" y2="150"></line>
+              <line x1="0" y1="100" x2="640" y2="100"></line>
+              <line x1="0" y1="50" x2="640" y2="50"></line>
+              <rect class="bar" x="24" y="86" width="40" height="64" style="--delay:0ms"></rect>
+              <rect class="bar" x="112" y="66" width="40" height="84" style="--delay:40ms"></rect>
+              <rect class="bar" x="200" y="96" width="40" height="54" style="--delay:80ms"></rect>
+              <rect class="bar" x="288" y="46" width="40" height="104" style="--delay:120ms"></rect>
+              <rect class="bar" x="376" y="76" width="40" height="74" style="--delay:160ms"></rect>
+              <rect class="bar" x="464" y="36" width="40" height="114" style="--delay:200ms"></rect>
+              <rect class="bar hot" x="552" y="20" width="40" height="130" style="--delay:240ms"></rect>
+              <polyline points="44,86 132,66 220,96 308,46 396,76 484,36 572,20"></polyline>
+              <circle class="pt" cx="44" cy="86" r="3"></circle><circle class="pt" cx="132" cy="66" r="3"></circle>
+              <circle class="pt" cx="220" cy="96" r="3"></circle><circle class="pt" cx="308" cy="46" r="3"></circle>
+              <circle class="pt" cx="396" cy="76" r="3"></circle><circle class="pt" cx="484" cy="36" r="3"></circle>
+              <circle class="pt" cx="572" cy="20" r="3"></circle>
+              <text x="24" y="170">周一</text><text x="112" y="170">周二</text><text x="200" y="170">周三</text>
+              <text x="288" y="170">周四</text><text x="376" y="170">周五</text><text x="464" y="170">周六</text>
+              <text x="552" y="170">今天</text>
+            </svg>
+            <div class="legend"><span><i style="background:var(--accent)"></i>今天</span><span><i style="background:var(--data-2)"></i>往日</span><span><i style="background:var(--h2)"></i>趋势</span></div>
+          </div>
+
+          <div class="card rise" style="--i:2">
+            <h4>工具族调用分布</h4>
+            <div class="fam-row"><span class="n">文件类</span><span class="bar"><i style="width:62%;background:var(--h7)"></i></span><span class="v">1,284</span></div>
+            <div class="fam-row"><span class="n">执行类</span><span class="bar"><i style="width:41%;background:var(--h6)"></i></span><span class="v">846</span></div>
+            <div class="fam-row"><span class="n">检索类</span><span class="bar"><i style="width:23%;background:var(--h8)"></i></span><span class="v">470</span></div>
+            <div class="fam-row"><span class="n">思考 / MCP</span><span class="bar"><i style="width:14%;background:var(--h2)"></i></span><span class="v">292</span></div>
+          </div>
+        </div>
+
+        <div class="card rise" style="--i:3">
+          <h4>预算</h4>
+          <div class="ring-wrap">
+            <svg width="88" height="88" viewBox="0 0 88 88" role="img">
+              <circle class="ring-track" cx="44" cy="44" r="36"></circle>
+              <circle class="ring-fill" cx="44" cy="44" r="36" style="--full:226;--dash:154"></circle>
+              <text class="ring-txt" x="44" y="44" text-anchor="middle" dominant-baseline="middle">32%</text>
+              <text class="ring-sub" x="44" y="60" text-anchor="middle">$3.18 / $10</text>
+            </svg>
+            <div>
+              <p style="margin:0 0 8px">本月预算使用 <b style="color:var(--h4)">32%</b>，未触发告警。</p>
+              <p style="margin:0;color:var(--text-2);font-size:12px;line-height:18px">达到 80% 时状态条会出现 H4 等待色提示。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ------------------------------------------------ 屏 3：空态 -->
+      <div class="screen" data-screen="empty">
+        <div class="empty">
+          <!-- 拼搭纹样：直角矩形 + 圆 + 三角 + 色条，按 8px 网格错落，面积 ≤6% -->
+          <svg width="180" height="120" viewBox="0 0 180 120" aria-hidden="true" class="rise" style="--i:0">
+            <rect x="0" y="24" width="64" height="64" fill="var(--s2)"></rect>
+            <circle cx="96" cy="56" r="24" fill="var(--accent)"></circle>
+            <rect x="136" y="32" width="4" height="48" fill="var(--h7)"></rect>
+            <polygon points="152,88 180,88 152,60" fill="var(--h3)"></polygon>
+            <rect x="64" y="96" width="24" height="8" fill="var(--s3)"></rect>
+          </svg>
+          <h2 class="rise" style="--i:1">开始一段对话</h2>
+          <p class="rise" style="--i:2">工作区 <span class="mono">01_AGENT_CLI</span> · 当前模型 agnes-3.0-flash</p>
+          <div class="quick rise" style="--i:3">
+            <a href="#">
+              <svg width="14" height="14" viewBox="0 0 14 14"><rect fill="var(--h7)" width="14" height="14"></rect><polygon fill="var(--s2)" points="14,0 14,5 9,0"></polygon></svg>
+              解释这个仓库的结构
+            </a>
+            <a href="#">
+              <svg width="14" height="14" viewBox="0 0 14 14"><rect fill="var(--h6)" width="14" height="14"></rect><rect fill="var(--s1)" x="3" y="6" width="8" height="2"></rect></svg>
+              跑测试并修失败项
+            </a>
+            <a href="#">
+              <svg width="14" height="14" viewBox="0 0 14 14"><circle fill="var(--h8)" cx="7" cy="7" r="7"></circle><polygon fill="var(--s1)" points="5,4 11,7 5,10"></polygon></svg>
+              阅读 AGENTS.md 的约定
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ------------------------------------------------ 屏 4：规范自检 -->
+      <div class="screen" data-screen="spec">
+        <div class="col">
+          <div class="card rise" style="--i:0">
+            <h4>面层阶梯（层级只靠明度差，无描边）</h4>
+            <div class="swatches">
+              <div class="sw"><i style="background:var(--s0)"></i><div class="n">--s0 主区底</div><div class="h">深色 L*4.32 / 浅色 88.83</div></div>
+              <div class="sw"><i style="background:var(--s1)"></i><div class="n">--s1 面板</div><div class="h">深色 L*9.16 / 浅色 92.40</div></div>
+              <div class="sw"><i style="background:var(--s2)"></i><div class="n">--s2 内容块</div><div class="h">深色 L*14.08 / 浅色 96.16</div></div>
+              <div class="sw"><i style="background:var(--s3)"></i><div class="n">--s3 内嵌面</div><div class="h">深色 L*19.69 / 浅色 100</div></div>
+            </div>
+          </div>
+
+          <div class="card rise" style="--i:1">
+            <h4>色相板（当前主题取值 · 语义固定）</h4>
+            <div class="swatches">
+              <div class="sw"><i style="background:var(--accent)"></i><div class="n">H1 ember</div><div class="h">主操作 / 运行中 / 焦点</div></div>
+              <div class="sw"><i style="background:var(--h2)"></i><div class="n">H2 indigo</div><div class="h">思考 / 外部数据 / MCP</div></div>
+              <div class="sw"><i style="background:var(--h3)"></i><div class="n">H3 teal</div><div class="h">成功 / 完成</div></div>
+              <div class="sw"><i style="background:var(--h4)"></i><div class="n">H4 amber</div><div class="h">等待批准 / 预算告警</div></div>
+              <div class="sw"><i style="background:var(--h5)"></i><div class="n">H5 red</div><div class="h">失败 / 错误</div></div>
+              <div class="sw"><i style="background:var(--h6)"></i><div class="n">H6 magenta</div><div class="h">工具族 · 执行类</div></div>
+              <div class="sw"><i style="background:var(--h7)"></i><div class="n">H7 violet</div><div class="h">工具族 · 文件类</div></div>
+              <div class="sw"><i style="background:var(--h8)"></i><div class="n">H8 lime</div><div class="h">工具族 · 检索类</div></div>
+            </div>
+          </div>
+
+          <div class="card rise" style="--i:2">
+            <h4>三种图元与拼搭（每条边界不是直线段就是圆弧）</h4>
+            <div class="gallery">
+              <div class="gitem">
+                <svg width="32" height="32" viewBox="0 0 32 32"><rect fill="var(--h7)" x="4" y="2" width="20" height="28"></rect><polygon fill="var(--s2)" points="24,2 24,10 16,2"></polygon></svg>
+                <span>文件 = 矩形减三角</span>
+              </div>
+              <div class="gitem">
+                <svg width="32" height="32" viewBox="0 0 32 32"><circle fill="var(--h8)" cx="13" cy="13" r="9"></circle><polygon fill="var(--text-2)" points="19,19 28,28 19,28"></polygon></svg>
+                <span>搜索 = 圆 + 三角</span>
+              </div>
+              <div class="gitem">
+                <svg width="32" height="32" viewBox="0 0 32 32"><rect fill="var(--s3)" width="32" height="24"></rect><rect fill="var(--accent)" x="6" y="14" width="12" height="4"></rect><rect fill="var(--text-2)" x="22" y="6" width="4" height="14"></rect></svg>
+                <span>终端 = 矩形 + 直角块</span>
+              </div>
+              <div class="gitem">
+                <svg width="32" height="32" viewBox="0 0 32 32"><rect fill="var(--accent)" width="32" height="32"></rect><polygon fill="var(--on-color)" points="9,7 26,16 9,25"></polygon></svg>
+                <span>发送 = 方形 + 三角</span>
+              </div>
+              <div class="gitem">
+                <svg width="32" height="32" viewBox="0 0 32 32"><rect fill="var(--s2)" width="32" height="32"></rect><polygon fill="var(--text-1)" points="8,12 24,12 16,22"></polygon></svg>
+                <span>折叠 = 方形 + 三角</span>
+              </div>
+              <div class="gitem">
+                <svg width="32" height="32" viewBox="0 0 32 32"><circle fill="var(--accent)" cx="16" cy="16" r="10"></circle><circle fill="var(--s2)" cx="16" cy="16" r="6"></circle></svg>
+                <span>运行 = 同心圆</span>
+              </div>
+              <div class="gitem">
+                <svg width="32" height="32" viewBox="0 0 32 32"><circle fill="none" stroke="var(--h3)" stroke-width="4" cx="16" cy="16" r="10"></circle><circle fill="var(--h3)" cx="16" cy="4" r="3"></circle></svg>
+                <span>进度 = 圆环 + 圆点</span>
+              </div>
+              <div class="gitem">
+                <svg width="32" height="32" viewBox="0 0 32 32"><rect fill="var(--h6)" width="4" height="32"></rect><circle fill="var(--h6)" cx="18" cy="16" r="8"></circle></svg>
+                <span>工作区 = 色条 + 圆</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card rise" style="--i:3">
+            <h4>动效档位（点击播放）</h4>
+            <div id="motionDemo">
+              <div class="motion-row" data-dur="--d-1" style="cursor: pointer; --dur: 90ms;"><span class="lbl">悬停 / 按下</span><span class="track"><i style=""></i></span><span class="ms">90ms</span></div>
+              <div class="motion-row" data-dur="--d-2" style="cursor: pointer; --dur: 150ms;"><span class="lbl">面板 / 列表 / 展开</span><span class="track"><i style=""></i></span><span class="ms">150ms</span></div>
+              <div class="motion-row" data-dur="--d-3" style="cursor: pointer; --dur: 240ms;"><span class="lbl">页面级 / 主题切换</span><span class="track"><i style=""></i></span><span class="ms">240ms</span></div>
+              <div class="motion-row" data-dur="--d-4" style="cursor: pointer; --dur: 400ms;"><span class="lbl">图表入场</span><span class="track"><i style=""></i></span><span class="ms">400ms</span></div>
+            </div>
+            <div class="hints">只动 transform / opacity / stroke-dashoffset；无弹跳、无带位移的循环动画。</div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ======================================================== 检查器 320px -->
+    <aside class="inspector">
+      <div class="sect slide-r" style="--i:1">
+        <h3>本次会话</h3>
+        <div class="panel">
+          <div class="ring-wrap">
+            <svg width="72" height="72" viewBox="0 0 72 72" role="img">
+              <circle class="ring-track" cx="36" cy="36" r="30"></circle>
+              <circle class="ring-fill" cx="36" cy="36" r="30" style="--full:188;--dash:75"></circle>
+              <text class="ring-txt" x="36" y="36" text-anchor="middle" dominant-baseline="middle">60%</text>
+            </svg>
+            <div class="mono" style="font-size:12px;line-height:18px;color:var(--text-2)">
+              上下文 3.6k / 6k<br>每轮压缩后自动回落
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sect slide-r" style="--i:2">
+        <h3>工具调用</h3>
+        <div class="panel">
+          <div class="fam-row" style="grid-template-columns:1fr">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="dot ok"></span><span class="mono" style="font-size:12px">file_read</span>
+              <span class="meta" style="margin-left:auto;color:var(--text-3);font-size:11px">42ms</span>
+            </div>
+          </div>
+          <div class="fam-row" style="grid-template-columns:1fr">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="dot run"></span><span class="mono" style="font-size:12px">shell_exec</span>
+              <span class="meta" style="margin-left:auto;color:var(--text-3);font-size:11px">运行中</span>
+            </div>
+          </div>
+          <div class="fam-row" style="grid-template-columns:1fr">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="dot bad"></span><span class="mono" style="font-size:12px">web_fetch</span>
+              <span class="meta" style="margin-left:auto;color:var(--text-3);font-size:11px">超时</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sect slide-r" style="--i:3">
+        <h3>本会话用量</h3>
+        <div class="panel">
+          <div class="kpi"><div class="k">输入 / 输出</div><div class="v" style="font-size:20px;line-height:28px">18.4k / 2.1k</div></div>
+          <div class="legend" style="margin-top:12px"><span><i style="background:var(--accent)"></i>输出</span><span><i style="background:var(--data-2)"></i>输入</span></div>
+        </div>
+      </div>
+
+      <div class="sect slide-r" style="--i:4">
+        <h3>待批准</h3>
+        <div class="panel">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="dot"></span>
+            <span style="font-size:12px;line-height:18px;color:var(--text-2)">越界写入 <span class="mono">../shared/</span> 需要你确认</span>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button class="ctl" style="width:auto;padding:0 12px;background:var(--accent);color:var(--on-color);font-size:12px">允许</button>
+            <button class="ctl" style="width:auto;padding:0 12px;background:var(--s3);color:var(--text-1);font-size:12px">拒绝</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- ============================================================ 状态条 28px -->
+  <footer class="statusbar">
+    <span>agnes-3.0-flash</span>
+    <span>think: medium</span>
+    <b>v0.10.0</b>
+    <span class="mono">~/work/ember</span>
+    <div class="right">
+      <span>缓存 62%</span>
+      <span>本轮 $0.004</span>
+      <span class="mono" id="dimTag">893x838</span>
+    </div>
+  </footer>
+
+</div>
+
+<script src="app.js"></script>
+
+</body></html>
