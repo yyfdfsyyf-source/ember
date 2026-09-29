@@ -100,17 +100,33 @@ static void test_input() {
   p.feed((uint8_t const*)seq, strlen(seq));
   CHECK(p.next(ev) && ev.type == tui::EventType::Paste && ev.text == "some \x1b[31mpasted");
 
-  // SGR mouse click at (3,4) (1-based 4;5). Left press = btn 0 + 32.
-  seq = "\x1b[<32;4;5M";
+  // SGR mouse, xterm convention (bit 32 = drag flag, NOT a +32 prefix).
+  // Left press at (3,4): btn 0, no motion.
+  seq = "\x1b[<0;4;5M";
   p.feed((uint8_t const*)seq, strlen(seq));
   CHECK(p.next(ev) && ev.type == tui::EventType::Mouse);
   CHECK(ev.mouse.x == 3 && ev.mouse.y == 4);
   CHECK((ev.mouse.buttons & 1) != 0 && ev.mouse.press);
+  // The old parser subtracted 32 first, so this very byte decoded as
+  // (-32 & 0x40) -> a wheel-up, i.e. every left click scrolled the view.
+  CHECK(ev.mouse.wheel == 0 && !ev.mouse.motion);
 
-  // SGR wheel up = 64 + 32
-  seq = "\x1b[<96;2;2M";
+  // Left drag: bit 32 set, still button 0, still not a wheel.
+  seq = "\x1b[<32;4;5M";
+  p.feed((uint8_t const*)seq, strlen(seq));
+  CHECK(p.next(ev) && ev.mouse.motion && (ev.mouse.buttons & 1) != 0 && ev.mouse.wheel == 0);
+
+  // Wheel up / down are 64 / 65.
+  seq = "\x1b[<64;2;2M";
   p.feed((uint8_t const*)seq, strlen(seq));
   CHECK(p.next(ev) && ev.type == tui::EventType::Mouse && ev.mouse.wheel == 1);
+  seq = "\x1b[<65;2;2M";
+  p.feed((uint8_t const*)seq, strlen(seq));
+  CHECK(p.next(ev) && ev.mouse.wheel == -1);
+  // Ctrl+wheel up (16 + 64) keeps the wheel and reports the modifier.
+  seq = "\x1b[<80;2;2M";
+  p.feed((uint8_t const*)seq, strlen(seq));
+  CHECK(p.next(ev) && ev.mouse.wheel == 1 && ev.mouse.ctrl);
 
   // alt+key and bare escape via timeout
   p.feed((uint8_t const*)"\x1bX", 2);

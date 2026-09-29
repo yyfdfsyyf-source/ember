@@ -311,32 +311,38 @@ void InputParser::decodeKitty(int code, int mod) {
 }
 
 void InputParser::parseSgrMouse() {
-  // SGR: ESC[<btn;x;yM  (press) / ESC[<btn;x;ym (release)
-  // btn encodes button+modifier bits+32 offset. x/y are 1-based.
+  // xterm SGR: ESC[<btn;x;yM (press/drag) / ESC[<btn;x;ym (release).
+  //   bit0-1 button number; 3 = release; 4 shift, 8 alt, 16 ctrl; 32 = motion;
+  //   64/65/66/67 = wheel up/down/left/right (bit 6 set, low bits pick dir).
+  // The 32 bit is a *flag*, not a prefix: the old code subtracted it
+  // unconditionally, which turned every plain left-press (btn 0 -> -32, whose
+  // 0x40 bit is set) into a fake wheel-up. It only looked right on Windows
+  // because translateMouse() there added 32 to everything.
+  int raw = params_[0];
   Event ev;
   ev.type = EventType::Mouse;
   ev.mouse.x = params_[1] - 1;
   ev.mouse.y = params_[2] - 1;
-  int bm = params_[0] - 32;
-  if (bm & 32) ev.mouse.motion = true;
-  int b = bm & 3;
-  if (b == 0) ev.mouse.buttons = 1;
-  else if (b == 1) ev.mouse.buttons = 2;
-  else if (b == 2) ev.mouse.buttons = 4;
-  else if (b == 3) ev.mouse.release = true;
-  ev.mouse.shift = (bm & 4) != 0;
-  ev.mouse.alt = (bm & 8) != 0;
-  ev.mouse.ctrl = (bm & 16) != 0;
-  // Wheel buttons are 64/65/66/67 (up/down/right/left): bit 0x40 selects wheel,
-  // the low two bits pick the direction. The old (bm >> 6) & 3 formula mapped
-  // every wheel button to "up".
-  if (bm & 0x40) {
-    int dir = bm & 0x03;
+  ev.mouse.motion = (raw & 32) != 0;
+  ev.mouse.shift = (raw & 4) != 0;
+  ev.mouse.alt = (raw & 8) != 0;
+  ev.mouse.ctrl = (raw & 16) != 0;
+  if (raw & 0x40) {                      // wheel: 64 up, 65 down, 66 right, 67 left
+    int dir = raw & 0x03;
     if (dir == 0) ev.mouse.wheel = 1;
     else if (dir == 1) ev.mouse.wheel = -1;
     else if (dir == 2) ev.mouse.wheel = 2;
     else ev.mouse.wheel = -2;
     ev.mouse.buttons = 0;
+  } else {
+    int b = raw & 3;
+    if (b == 0) ev.mouse.buttons = 1;
+    else if (b == 1) ev.mouse.buttons = 2;
+    else if (b == 2) ev.mouse.buttons = 4;
+    else {                               // b == 3: button release
+      ev.mouse.release = true;
+      ev.mouse.buttons = 0;
+    }
   }
   if (!ev.mouse.release && ev.mouse.buttons != 0) ev.mouse.press = true;
   push(std::move(ev));

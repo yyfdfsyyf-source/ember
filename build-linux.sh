@@ -83,13 +83,17 @@ echo "== ember $VER =="
 build ember "${COMMON[@]}" agent/src/main.cpp agent/src/app.cpp
 
 # Optional release staging, so the artifact is named after VERSION instead of a
-# date and both platforms share one version line. Stages the binary only; add
-# verify.sh and the tarball the way the existing packages do.
+# date and both platforms share one version line. The package carries the runtime
+# checker and the Linux README from tools/package/templates, so a release does not
+# depend on scavenging files out of the previous release directory.
 if [ "${STAGE:-0}" = 1 ]; then
   stage="releases/ember-$VER-linux-x86_64"
   mkdir -p "$stage"
   cp "$OUT/ember" "$stage/ember"
-  echo "staged: $stage/ember"
+  tpl=tools/package/templates
+  cp "$tpl/verify.sh" "$stage/verify.sh"
+  sed "s/@VERSION@/$VER/g" "$tpl/README-linux.txt" > "$stage/README-linux.txt"
+  echo "staged: $stage/ember, verify.sh, README-linux.txt"
 fi
 
 if [ "${BUILD_TESTS:-0}" = 1 ]; then
@@ -104,4 +108,12 @@ if [ "${BUILD_TESTS:-0}" = 1 ]; then
     if [ "$n" = test_inputflow ]; then extra=(agent/src/app.cpp); fi
     build "$n" "${COMMON[@]}" ${extra[@]+"${extra[@]}"} "$t"
   done
+fi
+
+if [ "${STAGE:-0}" = 1 ] && [ "${BUILD_TESTS:-0}" = 1 ]; then
+  # The staging block above runs before these are built, so copy them in now.
+  for f in "$OUT"/test_*; do
+    [ -f "$f" ] && cp "$f" "$stage/"
+  done
+  echo "staged $(ls "$stage" | wc -l) files into $stage"
 fi

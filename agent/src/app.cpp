@@ -1925,14 +1925,14 @@ void App::runCommand(std::string const& line) {
     applyThinking(probe);
     setStatus("thinking: " + thinkingLevelFromString(cfg_.thinking) +
               "  写法 " + thinkingStyleFromString(probe.thinkingStyle) +
-              "   (/think auto | none | minimal | low | medium | high)");
+              "   (/think auto | none | minimal | low | medium | high | max)");
     return;
   }
   if (rest.rfind("think ", 0) == 0) {
     std::string name = trimStr(rest.substr(6));
     std::string lvl = thinkingLevelFromString(name);
     if (lvl != name) {
-      setStatus("thinking: auto | none | minimal | low | medium | high");
+      setStatus("thinking: auto | none | minimal | low | medium | high | max");
       return;
     }
     cfg_.thinking = lvl;
@@ -1946,7 +1946,7 @@ void App::runCommand(std::string const& line) {
     if (lvl != "auto" && style == "none")
       msg += "  注意: 当前服务商写法 none，不发参数，档位无效";
     else if (lvl != "auto" && thinkingStyleIsBinary(style))
-      msg += "  注意: " + style + " 只分开关，minimal/low/high 等效";
+      msg += "  注意: " + style + " 只分开关，low/high/max 都是 enabled";
     setStatus(msg);
     return;
   }
@@ -3290,7 +3290,7 @@ CmdDef const kCommands[] = {
     {"model", "切换模型(服务商随分组自动切换) NAME|编号|add|rm|fetch", "", true},
     {"theme", "切换主题 dark|light|terminal|nord|gruvbox|dracula|solarized", "", true},
     {"mode", "切换运行模式 standard|minimal|ptc|creator", "", true},
-    {"think", "模型思考强度 auto|none|minimal|low|medium|high", "", true},
+    {"think", "模型思考强度 auto|none|minimal|low|medium|high|max", "", true},
     {"mcp", "MCP 服务器连接状态", "", false},
     {"ws", "工作区: /ws list|use N|add PATH|rm N|on|off", "", true},
     {"json", "切换 JSON 输出模式", "", false},
@@ -3435,8 +3435,8 @@ void App::printHelp(bool firstRun) {
   cmd("  /model       分组模型列表(settings.json 配 providers/groups)  /model add|rm NAME");
   cmd("  /theme NAME  主题 dark|light|terminal|nord|gruvbox|dracula|solarized");
   cmd("  /mode NAME   模式 standard|minimal|ptc|creator");
-  cmd("  /think NAME  思考强度 auto|none|minimal|low|medium|high(auto=不发参数)");
-  cmd("  /think NAME  模型思考强度 auto|none|minimal|low|medium|high (auto=不发参数)");
+  cmd("  /think NAME  思考强度 auto|none|minimal|low|medium|high|max(auto=不发参数)");
+  cmd("  /think NAME  模型思考强度 auto|none|minimal|low|medium|high|max (auto=不发参数)");
   cmd("                  standard=全部工具 ptc=run_code批量 minimal=shell+edit creator=运行时检查");
   cmd("  /mcp         MCP 服务器连接状态(工具以 <服务器名>_ 前缀注册)");
   cmd("  /ws          工作区列表  /ws add PATH|use N|rm N|on|off（越界操作需批准）");
@@ -4662,6 +4662,11 @@ int App::run() {
     }
   };
   std::string crashMsg;
+  // 首帧得自己画。renderDue() 只在"有事件"或"有动画"时重绘，而静默启动（新会话、
+  // 没有 notice、也不忙）两者都没有 —— POSIX 上就停在 alt-screen 空屏，直到用户
+  // 按下第一个键才亮。Windows 的输入路径开机先递来记录，把这个问题掩盖了。
+  render();
+  lastFrame = std::chrono::steady_clock::now();
   try {
     while (running_) {
       uint8_t buf[2048];

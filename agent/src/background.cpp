@@ -217,6 +217,8 @@ void readerLoop(std::shared_ptr<Task> const& t,
                 std::function<void(int, bool, std::string const&)> done) {
   int64_t t0 = nowMs();
   bool finished = false;
+  bool reaped = false;
+  int reapedStatus = 0;
   while (!finished) {
     char buf[4096];
     ssize_t n = read(t->readFd, buf, sizeof buf);
@@ -229,7 +231,20 @@ void readerLoop(std::shared_ptr<Task> const& t,
       struct timespec ts = {0, 100 * 1000000};
       nanosleep(&ts, nullptr);
       int st = 0;
-      if (waitpid(t->pid, &st, WNOHANG) == t->pid) finished = true;
+      if (!reaped && waitpid(t->pid, &st, WNOHANG) == t->pid) {
+        reaped = true;
+        reapedStatus = st;
+        // 子进程已经退出，但它写进管道的内容可能还没读完：非阻塞 read
+        // 到没数据为止。少这一步就会把最后一段输出（常见就是一行 echo）
+        // 连同 readFd 一起 close 掉。
+        for (;;) {
+          ssize_t m = read(t->readFd, buf, sizeof buf);
+          if (m <= 0) break;
+          std::lock_guard lk(t->m);
+          appendChunk(*t, std::string(buf, (size_t)m));
+        }
+        finished = true;
+      }
       bool timedOut = false;
       {
         std::lock_guard lk(t->m);
@@ -238,19 +253,24 @@ void readerLoop(std::shared_ptr<Task> const& t,
           t->killed = true;
           t->timedOut = true;
           timedOut = true;
-          ::kill(t->pid, SIGKILL);
+          if (!reaped) ::kill(t->pid, SIGKILL);
         }
       }
       if (timedOut) {
-        waitpid(t->pid, &st, 0);
+        if (!reaped) {
+          int st2 = 0;
+          if (waitpid(t->pid, &st2, 0) < 0) st2 = 0;
+          reaped = true;
+          reapedStatus = st2;
+        }
         finished = true;
       }
       continue;
     }
     if (n == 0) finished = true;  // EOF
   }
-  int st = 0;
-  if (waitpid(t->pid, &st, 0) < 0) st = 0;
+  int st = reapedStatus;
+  if (!reaped && waitpid(t->pid, &st, 0) < 0) st = 0;
   int code = WIFEXITED(st) ? WEXITSTATUS(st)
                            : (WIFSIGNALED(st) ? 128 + WTERMSIG(st) : -1);
   close(t->readFd);

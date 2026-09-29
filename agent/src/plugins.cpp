@@ -17,6 +17,7 @@
 #include <windows.h>
 #else
 #include <sys/wait.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <signal.h>
 #include <cerrno>
@@ -101,9 +102,14 @@ struct PluginProcess::Impl {
         continue;
       }
       if (n == 0) { alive = false; return false; }
-      if (errno == EINTR) continue;
-      if (std::chrono::steady_clock::now() >= deadline) { out.clear(); return false; }
-      std::this_thread::sleep_for(std::chrono::milliseconds(4));
+      if (n < 0 && errno == EINTR) continue;
+      if (n < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+        if (std::chrono::steady_clock::now() >= deadline) { out.clear(); return false; }
+        if (!alive) return false;
+        std::this_thread::sleep_for(std::chrono::milliseconds(4));
+        continue;
+      }
+      return false;  // 其它错误别再空转到 deadline
     }
 #endif
   }
@@ -193,6 +199,10 @@ struct PluginProcess::Impl {
     this->pid = pid;
     inFd = inP[1];
     outFd = outP[0];
+    // 读端设为非阻塞：readLine 的 timeoutMs 是靠"读到 EAGAIN 就查截止时间"
+    // 实现的，阻塞 fd 会让 read() 直接睡死，超时形同不存在（子进程沉默时
+    // 整个 agent 跟着挂）。
+    fcntl(outFd, F_SETFL, O_NONBLOCK);
     alive = true;
     return true;
 #endif
@@ -218,11 +228,16 @@ std::string PluginProcess::start(std::string const& exePath,
   // Plugin handshake (empty params; the plugin names itself in the result).
   std::string initReq = "{\"jsonrpc\":\"2.0\",\"id\":0,\"method\":\"initialize\",\"params\":{}}";
   std::string resp;
+  bool writeOk = false, readOk = false;
   {
     std::lock_guard lk(impl_->mu);
-    if (!impl_->writeLine(initReq)) { stop(); return "plugin: write failed"; }
-    if (!impl_->readLine(resp, 10000)) { stop(); return "plugin: no response from '" + name_ + "'"; }
+    writeOk = impl_->writeLine(initReq);
+    readOk = writeOk && impl_->readLine(resp, 10000);
   }
+  // stop() 自己会拿 impl_->mu，必须在上面的锁释放之后再调用：非递归锁二次
+  // 上锁就是永久 futex 等待。
+  if (!writeOk) { stop(); return "plugin: write failed"; }
+  if (!readOk) { stop(); return "plugin: no response from '" + name_ + "'"; }
   mini::Value v;
   if (!mini::tryParse(resp, v) || v.type != mini::Value::Object || v.has("error")) {
     stop();
@@ -263,13 +278,14 @@ std::string PluginProcess::startMcp(McpConfig const& cfg) {
     return "mcp: bad initialize response from '" + name_ + "'";
   }
   // notifications/initialized -> the server may then accept tools/list.
+  bool notifyOk = false;
   {
     std::lock_guard lk(impl_->mu);
-    if (!impl_->writeLine("{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}")) {
-      impl_->alive = false;
-      stop();
-      return "mcp: write failed";
-    }
+    notifyOk = impl_->writeLine("{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}");
+  }
+  if (!notifyOk) {
+    stop();  // stop() 里会把 alive 置假
+    return "mcp: write failed";
   }
   return "";
 }

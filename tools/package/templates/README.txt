@@ -15,8 +15,8 @@ Ember 是一个运行在终端里的命令行 AI 智能体:TUI 界面、OpenAI
   工具以 "<服务器名>_" 前缀注册;/mcp 查看连接状态与工具数。
 - 新增:多服务商与模型分组。providers 定义端点,groups 把模型绑定到
   服务商;/model 分组列出,/model <名称|编号> 会连同 base_url/key 一起切换。
-- 新增:思考强度。/think auto|none|minimal|low|medium|high;各端点的线上
-  写法差异由 provider 的 thinking_style 适配(effort / thinking /
+- 新增:思考强度。/think auto|none|minimal|low|medium|high|max;
+  各端点的线上写法差异由 provider 的 thinking_style 适配(effort / thinking /
   enable_thinking / chat_template_kwargs)。
 - 新增:工作区。/ws list|use N|add PATH|rm N|on|off;开启 workspace_guard
   后,工具越界访问文件会先请求批准。
@@ -70,8 +70,8 @@ Ember 是一个运行在终端里的命令行 AI 智能体:TUI 界面、OpenAI
     agent.exe --trace traj.jsonl
 
 参数说明(均为可选,环境变量同样有效,CLI 优先于环境变量):
-    --base-url URL     API 地址,如 https://apihub.agnes-ai.com/v1
-    --model NAME       模型名,如 agnes-2.5-flash
+    --base-url URL     API 地址,如 https://api.deepseek.com/v1
+    --model NAME       模型名,如 deepseek-v4-flash
     --api-key KEY      API 密钥
     --system TEXT      系统提示词
     --session PATH     单一会话文件(JSON,重启同文件可续聊;界面内 /save)
@@ -84,7 +84,7 @@ Ember 是一个运行在终端里的命令行 AI 智能体:TUI 界面、OpenAI
     --no-prune         关闭发送前冗余工具输出裁剪
     --rules PATH       AGENTS.md / SKILL.md 规则文件(默认读工作目录)
     --mode NAME        运行模式 standard|minimal|ptc|creator
-    --thinking NAME    思考强度 auto|none|minimal|low|medium|high
+    --thinking NAME    思考强度 auto|none|minimal|low|medium|high|max
     --json             结构化 JSON 输出模式
     --no-shell         禁用 shell_exec 工具
     --token-summary    退出时打印 token 台账一行(基准用)
@@ -108,7 +108,7 @@ AGENT_TRACE / AGENT_PLUGINS / AGENT_MODE / AGENT_THINKING
 
     base url   API 端点,形如 https://xxx/v1
     api key    密钥(明文显示为 * )
-    model      模型名,如 agnes-2.5-flash
+    model      模型名,如 deepseek-v4-flash
 
 按键:Enter 编辑选中项,Tab 移到下一项,Ctrl+S 保存并继续,Esc 跳过。
 保存后写入同目录下的 settings.json,下次启动自动读取;跳过后可随时
@@ -127,7 +127,7 @@ AGENT_TRACE / AGENT_PLUGINS / AGENT_MODE / AGENT_THINKING
                  /model add|rm NAME 维护列表(服务商随分组自动切换)
     /theme NAME  切换主题 dark|light|terminal|nord|gruvbox|dracula|solarized
     /mode NAME   运行模式 standard|minimal|ptc|creator
-    /think NAME  思考强度 auto|none|minimal|low|medium|high
+    /think NAME  思考强度 auto|none|minimal|low|medium|high|max
     /mcp         MCP 服务器连接状态
     /ws          工作区:/ws list|use N|add PATH|rm N|on|off
     /provider    弹窗填写服务商(base_url / key / 模型)
@@ -196,3 +196,7 @@ MCP 服务器在 settings.json 里配置(stdio JSON-RPC 2.0,一行一帧):
 - 想重置"首次向导":删除运行目录下 .agent_first_run 后重启。
 
 版本历史交由内测反馈集中收集。反馈请附 traj.jsonl 与复现步骤。
+
+许可:AGPL-3.0-only(全文见同目录 LICENSE)。你可以自由运行、研究、修改和
+分发本程序;但只要你分发改动后的版本,或者让他人通过网络使用它(包括
+--serve 协议和桌面端),就必须按同一许可公开对应源码。

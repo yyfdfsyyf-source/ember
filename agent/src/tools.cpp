@@ -36,6 +36,7 @@
 
 #ifndef _WIN32
 #include <unistd.h>
+#include <sys/wait.h>
 #endif
 
 namespace agent {
@@ -289,7 +290,8 @@ std::string runGitCmd(std::string const& workDir, std::vector<std::string> const
 #ifdef _WIN32
   rc = _pclose(p);
 #else
-  rc = pclose(p);
+  int raw = pclose(p);  // wait status，不是退出码
+  rc = WIFEXITED(raw) ? WEXITSTATUS(raw) : -1;
 #endif
   mini::Value o = mini::Value::makeObject();
   o.set("ok", mini::Value::makeBool(true));
@@ -493,7 +495,10 @@ CapturedCmd runCommandCaptured(std::string const& fullCmd, size_t cap,
       break;
     }
   }
-  res.exitCode = pclose(p);
+  int raw = pclose(p);
+  // pclose() 返回的是 wait status，退出码在高字节：不拆的话 `exit 3` 会变成
+  // 768（Windows 的 _pclose 直接给退出码，所以这坑只在 POSIX 侧）。
+  res.exitCode = WIFEXITED(raw) ? WEXITSTATUS(raw) : -1;
   res.out = out + (truncated ? "\n...[truncated]" : "");
   return res;
 }

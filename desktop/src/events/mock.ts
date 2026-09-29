@@ -63,7 +63,7 @@ const COMMANDS: CommandInfo[] = (
     ['model', '切换模型(服务商随分组自动切换) NAME|编号|add|rm|fetch', '', true],
     ['theme', '切换主题 dark|light|terminal|nord|gruvbox|dracula|solarized', '', true],
     ['mode', '切换运行模式 standard|minimal|ptc|creator', '', true],
-    ['think', '模型思考强度 auto|none|minimal|low|medium|high', '', true],
+    ['think', '模型思考强度 auto|none|minimal|low|medium|high|max', '', true],
     ['mcp', 'MCP 服务器连接状态', '', false],
     ['ws', '工作区: /ws list|use N|add PATH|rm N|on|off', '', true],
     ['json', '切换 JSON 输出模式', '', false],
@@ -211,8 +211,8 @@ export function createMockTransport(): AgentTransport {
   /** 与 C++ App::serveSet 同语义：改哪一项、回执什么、要不要重发列表。 */
   const applySet = (key: string, value: string): void => {
     if (key === 'thinking') {
-      if (!['auto', 'none', 'minimal', 'low', 'medium', 'high'].includes(value)) {
-        emit({ type: 'error', message: `thinking: auto | none | minimal | low | medium | high（收到 ${value}）` });
+      if (!['auto', 'none', 'minimal', 'low', 'medium', 'high', 'max'].includes(value)) {
+        emit({ type: 'error', message: `thinking: auto | none | minimal | low | medium | high | max（收到 ${value}）` });
         return;
       }
       STATE.thinking = value;

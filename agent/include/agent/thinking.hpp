@@ -6,12 +6,13 @@ namespace agent {
 
 // Model thinking-strength control. Two independent knobs:
 //   level - how much the model should think: auto | none | minimal | low |
-//           medium | high. "auto" sends no field at all, so an unconfigured
-//           model gets byte-identical requests to the pre-feature behavior.
+//           medium | high | max. "auto" sends no field at all, so an
+//           unconfigured model gets byte-identical requests to the pre-feature
+//           behavior.
 //   style - how a provider spells it on the wire (see thinkingStyles()).
 
 inline std::vector<std::string> thinkingLevels() {
-  return {"auto", "none", "minimal", "low", "medium", "high"};
+  return {"auto", "none", "minimal", "low", "medium", "high", "max"};
 }
 
 // "" (unset) and an unrecognized value both normalize to "auto".
@@ -29,6 +30,8 @@ inline std::string thinkingWire(std::string const& level) {
 
 // Providers that accept none of these get no thinking field whatsoever.
 //   effort          reasoning_effort: "low"            (OpenAI, DeepSeek, OpenRouter)
+//                       DeepSeek documents low/high/max; the level is sent
+//                       verbatim, so minimal/medium are the endpoint's to read.
 //   thinking        thinking: {type: enabled|disabled} (Zhipu GLM, Moonshot Kimi)
 //   enable_thinking enable_thinking: true              (Qwen / DashScope / vLLM)
 //   chat_template_kwargs  chat_template_kwargs: {enable_thinking: true}

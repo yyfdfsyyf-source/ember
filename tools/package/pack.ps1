@@ -57,6 +57,11 @@ if (Test-Path -LiteralPath $tpl) {
   [System.IO.File]::WriteAllText($readme, $text, $utf8)
 }
 
+# AGPL-3.0-only requires the license text to travel with the binary.
+$lic = Join-Path $root "LICENSE"
+if (!(Test-Path -LiteralPath $lic)) { throw "missing $lic (the package must carry the license text)" }
+Copy-Item -LiteralPath $lic -Destination (Join-Path $relDir "LICENSE")
+
 Write-Host "==> zipping"
 if (Test-Path -LiteralPath $zipPath) { Remove-Item -LiteralPath $zipPath -Force }
 Compress-Archive -Path (Join-Path $relDir "*") -DestinationPath $zipPath -CompressionLevel Optimal

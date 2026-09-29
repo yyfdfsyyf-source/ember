@@ -100,7 +100,7 @@ struct AppConfig {
   std::string rulesPath;    // non-empty: AGENTS.md/SKILL.md to inject at turn start
   std::string mode = "standard";  // run-mode preset: standard | minimal | ptc | creator
   // Thinking strength sent with every request: auto (send nothing) | none |
-  // minimal | low | medium | high. The wire spelling comes from the active
+  // minimal | low | medium | high | max. The wire spelling comes from the active
   // provider's thinkingStyle.
   std::string thinking = "auto";
   std::string thinkingStyle;  // the default connection's wire style; "" = "effort"

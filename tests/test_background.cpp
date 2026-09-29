@@ -49,6 +49,15 @@ static void waitDone(std::string const& id, std::string* lastStatus) {
   }
 }
 
+// 拖时间的命令必须按平台选：POSIX 的 ping 只接受一个主机参数，
+// `ping -n 30 127.0.0.1` 会当成两个主机名而立刻报错退出，于是
+// kill/timeout 两条断言测的是"进程早没了"，跟实现无关。
+#if defined(_WIN32)
+static char const* kLongRunning = "ping -n 30 127.0.0.1 >nul 2>&1";
+#else
+static char const* kLongRunning = "sleep 30";
+#endif
+
 static void test_quick_finish() {
   std::string r = agent::backgroundRunner().start("echo hello-bg", 0);
   std::string id = getStr(r, "id");
@@ -67,7 +76,7 @@ static void test_quick_finish() {
 
 static void test_kill() {
   std::string r = agent::backgroundRunner().start(
-      "ping -n 30 127.0.0.1 >nul 2>&1", 0);  // ~30s lifetime
+      kLongRunning, 0);  // ~30s lifetime
   std::string id = getStr(r, "id");
   CHECK(!id.empty());
   std::this_thread::sleep_for(std::chrono::milliseconds(200));
@@ -81,7 +90,7 @@ static void test_kill() {
 
 static void test_timeout() {
   std::string r = agent::backgroundRunner().start(
-      "ping -n 30 127.0.0.1 >nul 2>&1", 800);
+      kLongRunning, 800);
   std::string id = getStr(r, "id");
   CHECK(!id.empty());
   std::string s;
@@ -104,7 +113,7 @@ static void test_no_notify_on_manual_kill() {
   agent::backgroundRunner().setNotifier(
       [&](std::string const&, int, bool, std::string const&) { notified = true; });
   std::string r = agent::backgroundRunner().start(
-      "ping -n 30 127.0.0.1 >nul 2>&1", 0);
+      kLongRunning, 0);
   std::string id = getStr(r, "id");
   CHECK(!id.empty());
   agent::backgroundRunner().kill(id);

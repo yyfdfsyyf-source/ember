@@ -109,7 +109,7 @@ function Picker({ label, title, value, dot, rows, note, onPick }: PickerProps): 
   );
 }
 
-const THINK_LEVELS = ['auto', 'none', 'minimal', 'low', 'medium', 'high'];
+const THINK_LEVELS = ['auto', 'none', 'minimal', 'low', 'medium', 'high', 'max'];
 
 /* ------------------------------------------------------------------ 顶栏 */
 export interface TopBarProps {

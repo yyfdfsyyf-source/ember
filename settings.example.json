@@ -1,42 +1,53 @@
 {
-  "base_url": "https://ai.txcxgzs.com/v1",
+  "base_url": "https://api.openai.com/v1",
   "api_key": "<你的密钥>",
-  "model": "agnes-3.0-flash",
+  "model": "gpt-4o-mini",
   "providers": [
     {
-      "name": "zhipu",
-      "base_url": "https://ai.txcxgzs.com/v1",
-      "api_key": "<你的密钥>"
+      "name": "deepseek",
+      "base_url": "https://api.deepseek.com/v1",
+      "api_key_env": "DEEPSEEK_API_KEY"
     },
     {
-      "name": "agnes",
-      "base_url": "https://apihub.agnes-ai.com/v1",
+      "name": "ollama",
+      "base_url": "http://localhost:11434/v1"
+    },
+    {
+      "name": "glm",
+      "base_url": "https://open.bigmodel.cn/api/paas/v4",
       "api_key": "<你的密钥>",
-      "thinking_style": "chat_template_kwargs"
+      "thinking_style": "thinking"
     }
   ],
   "groups": [
     {
-      "name": "zhipu",
-      "provider": "zhipu",
+      "name": "gpt",
+      "provider": "default",
       "models": [
-        "gx-glm-5.3-flash"
+        "gpt-4o",
+        "gpt-4o-mini"
       ]
     },
     {
-      "name": "free",
-      "provider": "zhipu",
+      "name": "ds",
+      "provider": "deepseek",
       "models": [
-        "ofree-z-ai/glm-5.3-flash-free",
-        "ofree-deepseek/deepseek-v4-flash-free"
+        "deepseek-v4-pro",
+        "deepseek-v4-flash"
       ]
     },
     {
-      "name": "agnes",
-      "provider": "agnes",
+      "name": "local",
+      "provider": "ollama",
       "models": [
-        "agnes-3.0-flash",
-        "agnes-2.5-flash"
+        "qwen2.5"
+      ]
+    },
+    {
+      "name": "glm",
+      "provider": "glm",
+      "models": [
+        "glm-4.5"
       ]
     }
   ],

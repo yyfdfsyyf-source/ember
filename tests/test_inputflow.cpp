@@ -345,6 +345,14 @@ int main() {
     CHECK(app.argSuggest("/think l").cands.size() == 1 &&
           app.argSuggest("/think l").cands[0] == "low");
 
+    // "max" is a level like any other: accepted, saved, and completable.
+    CHECK(app.argSuggest("/think ma").cands.size() == 1 &&
+          app.argSuggest("/think ma").cands[0] == "max");
+    app.runCommand("/think max");
+    CHECK(app.cfg_.thinking == "max");
+    CHECK(app.status_.find("thinking: max") != std::string::npos);
+    app.runCommand("/think high");
+
     // The spelling follows the provider that serves the current model.
     agent::ProviderConfig p;
     p.name = "svc"; p.baseUrl = "http://127.0.0.1:1/v1"; p.thinkingStyle = "thinking";

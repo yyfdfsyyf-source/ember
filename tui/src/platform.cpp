@@ -380,7 +380,9 @@ void translateMouse(MOUSE_EVENT_RECORD const& m, std::string& out) {
   if (GetKeyState(VK_SHIFT) & 0x8000) ks |= 4;
   if (GetKeyState(VK_MENU) & 0x8000) ks |= 8;
   if (GetKeyState(VK_CONTROL) & 0x8000) ks |= 16;
-  int code = btn + 32 + ks;
+  // xterm SGR bit 32 means "this was a drag", not "every event carries +32".
+  // The parser reads these same bits, so the two must agree.
+  int code = btn + ks + (m.dwEventFlags == MOUSE_MOVED ? 32 : 0);
   char tmp[64];
   int n = snprintf(tmp, sizeof(tmp), "\x1b[<%d;%d;%dM", code, m.dwMousePosition.X + 1, m.dwMousePosition.Y + 1);
   out.append(tmp, (size_t)n);

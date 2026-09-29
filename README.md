@@ -1,8 +1,9 @@
 # Ember — Terminal Software-Engineering Agent
 
 A text-first, C++20 TUI agent for software engineering inside the terminal.
-Zero runtime dependencies beyond the system C++ standard library and a
-headless Chrome/Edge binary for browser tools.
+The Windows binary is standalone (statically linked); the Linux binary needs
+only the system `libcurl.so.4` and glibc 2.30+. Browser tools additionally
+drive a headless Chrome/Edge binary over CDP.
 
 ## Current Version
 
@@ -77,7 +78,7 @@ omit it to explicitly use that same default connection.
   ],
   "groups": [
     { "name": "gpt",  "provider": "default",  "models": ["gpt-4o", "gpt-4o-mini"] },
-    { "name": "ds",   "provider": "deepseek", "models": ["deepseek-chat", "deepseek-reasoner"] },
+    { "name": "ds",   "provider": "deepseek", "models": ["deepseek-v4-pro", "deepseek-v4-flash"] },
     { "name": "local","provider": "ollama",   "models": ["qwen2.5", "llama3.2"] },
     { "name": "glm",  "provider": "glm",      "models": ["glm-4.5"] }
   ]
@@ -91,7 +92,7 @@ omit it to explicitly use that same default connection.
 ### Thinking strength
 
 `thinking` (top level) sets how hard the model reasons: `auto` (default: send
-nothing) | `none` | `minimal` | `low` | `medium` | `high`. Change it live with
+nothing) | `none` | `minimal` | `low` | `medium` | `high` | `max`. Change it live with
 `/think <level>` (shown on the frame's top edge as `[think:high]`), or at
 startup with `--thinking NAME` / `AGENT_THINKING`.
 
@@ -109,6 +110,9 @@ connection):
 
 `thinking`, `enable_thinking` and `chat_template_kwargs` are binary: `/think low` on such a
 provider still just turns thinking on, and Ember says so in the status line.
+
+DeepSeek documents `reasoning_effort` as `low` / `high` / `max`; Ember sends the
+level you pick verbatim, so use `/think max` for its strongest setting.
 
 ### MCP servers
 
@@ -130,9 +134,25 @@ connections.
 
 ## Releases
 
-Pre-built Windows binaries are in `releases/`. Unzip the package and run
-`Ember.exe` (or `agent.exe`).
+Download the pre-built binaries from
+[the latest GitHub Release](https://github.com/yyfdfsyyf-source/ember/releases/latest):
+
+- `Ember-<ver>-win64.zip` — unzip and run `agent.exe`
+- `ember-<ver>-linux-x86_64.tar.gz` — `tar xzf` it and run `ember` (needs the
+  system `libcurl.so.4` and glibc 2.30+; run `./verify.sh` first)
+
+The Linux package also carries `verify.sh` and the offline test binaries.
 
 ## License
 
-MIT
+Copyright (c) 2026 YYFDFS
+
+Ember is licensed under the **GNU AGPL-3.0-only** (see `LICENSE`). In plain
+terms: you may run, study, modify and redistribute Ember, but if you distribute
+a modified version — or let people use Ember over a network, including through
+its `--serve` protocol or the desktop app — you must release the corresponding
+source under the same license. That is deliberate: Ember is meant to stay open,
+including as a hosted service.
+
+Everything under `third_party/` is written for this project and carries no
+upstream license restrictions.

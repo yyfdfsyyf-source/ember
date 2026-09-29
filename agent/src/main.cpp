@@ -26,7 +26,7 @@ void printHelp() {
   "  --no-prune          disable redundant-output pruning before each request\n"
   "  --rules PATH        AGENTS.md/SKILL.md file injected at turn start\n"
   "  --mode NAME        run-mode preset: standard|minimal|ptc|creator (env AGENT_MODE)\n"
-  "  --thinking NAME    model thinking strength: auto|none|minimal|low|medium|high\n"
+  "  --thinking NAME    model thinking strength: auto|none|minimal|low|medium|high|max\n"
   "                      (auto sends no field; the wire spelling comes from the\n"
   "                      provider's thinking_style; env AGENT_THINKING)\n"
   "  --token-summary     print a token ledger line on exit\n"
@@ -66,12 +66,17 @@ std::string envOr(char const* name, std::string def) {
 }
 
 // Default multi-session directory when neither --session nor --sessions is
-// given, so conversations are saved and resumed automatically.
+// given, so conversations are saved and resumed automatically. Same order as
+// DiskCache::resolveDir: XDG first, then the Windows known folders, then HOME.
 std::string defaultSessionDir() {
-  char const* base = std::getenv("LOCALAPPDATA");
-  if (base && *base) return std::string(base) + "\\Ember\\sessions";
-  char const* home = std::getenv("USERPROFILE");
-  if (home && *home) return std::string(home) + "\\.ember\\sessions";
+  if (char const* x = std::getenv("XDG_DATA_HOME"); x && *x)
+    return std::string(x) + "/ember/sessions";
+  if (char const* l = std::getenv("LOCALAPPDATA"); l && *l)
+    return std::string(l) + "\\Ember\\sessions";
+  if (char const* u = std::getenv("USERPROFILE"); u && *u)
+    return std::string(u) + "\\.ember\\sessions";
+  if (char const* h = std::getenv("HOME"); h && *h)
+    return std::string(h) + "/.local/share/ember/sessions";
   return "sessions";
 }
 

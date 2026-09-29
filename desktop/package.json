@@ -2,6 +2,7 @@
   "name": "ember-desktop",
   "private": true,
   "version": "0.10.0",
+  "license": "AGPL-3.0-only",
   "type": "module",
   "description": "Ember Desktop — Tauri 前端（设计系统 v2 的 React 实现）",
   "scripts": {

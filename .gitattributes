@@ -1,0 +1,11 @@
+# Line-ending rules that matter for this repo:
+# verify.sh ships inside the Linux package and dies with a stray \r, so it must
+# never be checked out with CRLF. PowerShell scripts are the opposite (Windows).
+*.sh   text eol=lf
+*.ps1  text eol=crlf
+*.cmd  text eol=crlf
+*.exe  binary
+*.zip  binary
+*.gz   binary
+*.tar  binary
+*.png  binary

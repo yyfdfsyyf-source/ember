@@ -70,8 +70,8 @@ Ember 是一个运行在终端里的命令行 AI 智能体:TUI 界面、OpenAI
     agent.exe --trace traj.jsonl
 
 参数说明(均为可选,环境变量同样有效,CLI 优先于环境变量):
-    --base-url URL     API 地址,如 https://apihub.agnes-ai.com/v1
-    --model NAME       模型名,如 agnes-2.5-flash
+    --base-url URL     API 地址,如 https://api.deepseek.com/v1
+    --model NAME       模型名,如 deepseek-v4-flash
     --api-key KEY      API 密钥
     --system TEXT      系统提示词
     --session PATH     单一会话文件(JSON,重启同文件可续聊;界面内 /save)
@@ -108,7 +108,7 @@ AGENT_TRACE / AGENT_PLUGINS / AGENT_MODE / AGENT_THINKING
 
     base url   API 端点,形如 https://xxx/v1
     api key    密钥(明文显示为 * )
-    model      模型名,如 agnes-2.5-flash
+    model      模型名,如 deepseek-v4-flash
 
 按键:Enter 编辑选中项,Tab 移到下一项,Ctrl+S 保存并继续,Esc 跳过。
 保存后写入同目录下的 settings.json,下次启动自动读取;跳过后可随时

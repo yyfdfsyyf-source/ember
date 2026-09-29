@@ -483,6 +483,7 @@ int main() {
         {"auto", "", ""},
         {"high", "", "\"reasoning_effort\":\"high\""},
         {"low", "effort", "\"reasoning_effort\":\"low\""},
+        {"max", "effort", "\"reasoning_effort\":\"max\""},
         {"medium", "thinking", "\"thinking\":{\"type\":\"enabled\"}"},
         {"none", "thinking", "\"thinking\":{\"type\":\"disabled\"}"},
         {"minimal", "enable_thinking", "\"enable_thinking\":true"},

@@ -416,7 +416,7 @@ std::vector<tui::Field> buildSettingsFields(AppConfig const& cfg,
   f.label = "thinking";
   f.tag = "thinking";
   f.value = thinkingLevelFromString(cfg.thinking);
-  f.hint = "auto | none | minimal | low | medium | high";
+  f.hint = "auto | none | minimal | low | medium | high | max";
   fields.push_back(f);
 
   f = tui::Field{};
