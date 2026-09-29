@@ -143,6 +143,10 @@ Download the pre-built binaries from
 
 The Linux package also carries `verify.sh` and the offline test binaries.
 
+If the release page is missing an asset, build from source with the two commands
+above — the binaries are produced by `tools/package/pack.ps1` (Windows) and
+`STAGE=1 BUILD_TESTS=1 ./build-linux.sh` (Linux).
+
 ## License
 
 Copyright (c) 2026 YYFDFS
