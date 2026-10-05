@@ -134,17 +134,20 @@ connections.
 
 ## Releases
 
-Download the pre-built binaries from
-[the latest GitHub Release](https://github.com/yyfdfsyyf-source/ember/releases/latest):
+The pre-built packages are committed in-tree under
+[`releases/`](releases/), so no asset hosting is involved; the tagged
+[GitHub Release](https://github.com/yyfdfsyyf-source/ember/releases/latest) page
+carries the changelog.
 
 - `Ember-<ver>-win64.zip` — unzip and run `agent.exe`
-- `ember-<ver>-linux-x86_64.tar.gz` — `tar xzf` it and run `ember` (needs the
-  system `libcurl.so.4` and glibc 2.30+; run `./verify.sh` first)
+- `ember-<ver>-linux-x86_64.tar.gz` — `tar xzf` it, `chmod +x ember verify.sh`,
+  then run `./ember` (needs the system `libcurl.so.4` and glibc 2.30+)
 
-The Linux package also carries `verify.sh` and the offline test binaries.
+The Linux package also ships `verify.sh`, `LICENSE` and the offline test
+binaries, so `sh verify.sh` tells you on the spot whether that machine can run
+Ember — it needs no network and no API key.
 
-If the release page is missing an asset, build from source with the two commands
-above — the binaries are produced by `tools/package/pack.ps1` (Windows) and
+Or build from source: `tools/package/pack.ps1` (Windows) and
 `STAGE=1 BUILD_TESTS=1 ./build-linux.sh` (Linux).
 
 ## License

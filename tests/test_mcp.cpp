@@ -23,6 +23,16 @@ static bool has(std::string const& hay, std::string const& needle) {
   return hay.find(needle) != std::string::npos;
 }
 
+// build.ps1 leaves the helper exes in out/, the Linux cross-build stages them
+// next to this binary, and neither spelling has an .exe suffix on POSIX.
+static std::string findBuilt(std::string const& stem) {
+  std::string const cands[] = {"out/" + stem + ".exe", "out/" + stem, stem + ".exe", stem};
+  for (std::string const& c : cands) {
+    if (std::filesystem::is_regular_file(c)) return c;
+  }
+  return "";
+}
+
 int main() {
   using namespace agent;
 
@@ -37,9 +47,9 @@ int main() {
     CHECK(!dead.running());
   }
 
-  std::string exe = "out/mcp_echo.exe";
-  if (!std::filesystem::is_regular_file(exe)) {
-    std::printf("mcp_echo.exe not built; skipping MCP checks\n");
+  std::string exe = findBuilt("mcp_echo");
+  if (exe.empty()) {
+    std::printf("mcp_echo not built; skipping MCP checks\n");
     std::printf("checks=%d failures=%d\n", checks, failures);
     return failures == 0 ? 0 : 1;
   }

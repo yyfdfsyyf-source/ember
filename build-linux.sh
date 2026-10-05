@@ -5,7 +5,8 @@
 # MODE=dynamic (default, works):  target x86_64-linux.<FLOOR>-gnu, linking
 #   libcurl.so.4 from the unpacked Alpine sonames. Measured on the produced
 #   binary: it needs libcurl.so.4 + libc.so.6 with symbol versions up to
-#   GLIBC_2.29 — zig's bundled libc++ reaches past FLOOR, so FLOOR=2.17 does
+#   GLIBC_2.30 (pthread_cond_clockwait, reached via std::condition_variable in
+#   app.cpp) — zig's bundled libc++ goes past FLOOR, so FLOOR=2.17 does
 #   NOT by itself guarantee a 2.17 box can run it.
 # MODE=static (blocked):  x86_64-linux-musl -static would give a zero-dependency
 #   ELF, but Alpine builds curl-static against c-ares and ships no
@@ -14,7 +15,8 @@
 #   POSIX http.cpp that shells out to the system curl instead of libcurl.
 #
 #   usage:  ./build-linux.sh                      # ember
-#           BUILD_TESTS=1 ./build-linux.sh        # + the 20 offline test binaries
+#           BUILD_TESTS=1 ./build-linux.sh        # + the 20 offline tests and
+#                                                 #   the 2 helper exes they spawn
 #           STAGE=1 ./build-linux.sh              # + releases/ember-<version>-linux-x86_64
 #           ZIG=... SYSROOT=... ./build-linux.sh  # override tool locations
 set -euo pipefail
@@ -88,15 +90,25 @@ build ember "${COMMON[@]}" agent/src/main.cpp agent/src/app.cpp
 # depend on scavenging files out of the previous release directory.
 if [ "${STAGE:-0}" = 1 ]; then
   stage="releases/ember-$VER-linux-x86_64"
+  # AGPL-3.0-only: the package has to carry the licence, so a missing LICENSE
+  # file fails the build instead of shipping a package without one.
+  [ -f LICENSE ] || { echo "ERROR: LICENSE missing at repo root" >&2; exit 1; }
   mkdir -p "$stage"
   cp "$OUT/ember" "$stage/ember"
+  cp LICENSE "$stage/LICENSE"
   tpl=tools/package/templates
   cp "$tpl/verify.sh" "$stage/verify.sh"
   sed "s/@VERSION@/$VER/g" "$tpl/README-linux.txt" > "$stage/README-linux.txt"
-  echo "staged: $stage/ember, verify.sh, README-linux.txt"
+  echo "staged: $stage/ember, LICENSE, verify.sh, README-linux.txt"
 fi
 
 if [ "${BUILD_TESTS:-0}" = 1 ]; then
+  # test_plugins and test_mcp spawn these as children; without them both suites
+  # skip every check instead of failing, which reads as a green run.
+  echo "== helpers =="
+  build plugin_echo examples/plugin_echo.cpp
+  build mcp_echo examples/mcp_echo.cpp
+
   # Runtime verification has to happen on the target box: these are the offline
   # test binaries, cross-built the same way. test_browser / test_desktop /
   # test_alltools drive CDP and UIA and are not built for Linux at all.
@@ -112,7 +124,7 @@ fi
 
 if [ "${STAGE:-0}" = 1 ] && [ "${BUILD_TESTS:-0}" = 1 ]; then
   # The staging block above runs before these are built, so copy them in now.
-  for f in "$OUT"/test_*; do
+  for f in "$OUT"/test_* "$OUT"/plugin_echo "$OUT"/mcp_echo; do
     [ -f "$f" ] && cp "$f" "$stage/"
   done
   echo "staged $(ls "$stage" | wc -l) files into $stage"

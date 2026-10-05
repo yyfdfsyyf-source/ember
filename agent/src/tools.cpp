@@ -37,6 +37,10 @@
 #ifndef _WIN32
 #include <unistd.h>
 #include <sys/wait.h>
+#include <poll.h>
+#include <cerrno>
+#include <chrono>
+#include <csignal>
 #endif
 
 namespace agent {
@@ -425,18 +429,24 @@ CapturedCmd runCommandCaptured(std::string const& fullCmd, size_t cap,
   }
   CloseHandle(pi.hThread);
 
-  bool truncated = false;
+  bool truncated = cap == 0;
   ULONGLONG start = GetTickCount64();
   for (;;) {
     DWORD avail = 0;
-    if (PeekNamedPipe(rPipe, NULL, 0, NULL, &avail, NULL) && avail > 0 &&
-        !truncated) {
+    if (PeekNamedPipe(rPipe, NULL, 0, NULL, &avail, NULL) && avail > 0) {
       char tmp[4096];
-      DWORD want = (DWORD)(cap - res.out.size());
-      if (want > sizeof(tmp)) want = sizeof(tmp);
-      if (want > avail) want = avail;
+      // After the cap is reached we keep draining the pipe and drop what we
+      // read: stopping early leaves the child blocked on a full pipe buffer,
+      // and we would report a timeout for a command that was only waiting
+      // for us to catch up.
+      DWORD room = sizeof(tmp);
+      if (!truncated) {
+        size_t left = cap > res.out.size() ? cap - res.out.size() : 0;
+        if (left < room) room = (DWORD)left;
+      }
+      DWORD want = avail < room ? avail : room;
       DWORD got = 0;
-      if (ReadFile(rPipe, tmp, want, &got, NULL) && got > 0) {
+      if (ReadFile(rPipe, tmp, want, &got, NULL) && got > 0 && !truncated) {
         res.out.append(tmp, got);
         if (res.out.size() >= cap) truncated = true;
       }
@@ -475,31 +485,82 @@ CapturedCmd runCommandCaptured(std::string const& fullCmd, size_t cap,
   }
   CloseHandle(rPipe);
   CloseHandle(pi.hProcess);
+  if (truncated) res.out += "\n...[truncated]";
   res.out += res.timedOut ? "\n...[timed out]" : "";
   return res;
 }
 #else
 CapturedCmd runCommandCaptured(std::string const& fullCmd, size_t cap,
-                               long) {
+                               long timeoutMs) {
   CapturedCmd res;
-  FILE* p = popen(fullCmd.c_str(), "r");
-  if (!p) return res;
+  int fds[2];
+  if (pipe(fds) != 0) return res;
+  pid_t pid = fork();
+  if (pid < 0) {
+    close(fds[0]);
+    close(fds[1]);
+    return res;
+  }
+  if (pid == 0) {
+    // Child: stick to async-signal-safe calls between fork and exec.
+    close(fds[0]);
+    dup2(fds[1], STDOUT_FILENO);
+    dup2(STDOUT_FILENO, STDERR_FILENO);
+    close(fds[1]);
+    execl("/bin/sh", "sh", "-c", fullCmd.c_str(), static_cast<char*>(nullptr));
+    _exit(127);
+  }
+  close(fds[1]);
+
+  const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeoutMs);
   std::string out;
   char buf[4096];
   bool truncated = false;
-  while (fgets(buf, sizeof buf, p)) {
-    out += buf;
-    if (out.size() > cap) {
-      out.resize(cap);
-      truncated = true;
+  for (;;) {
+    auto leftMs = std::chrono::duration_cast<std::chrono::milliseconds>(
+                      deadline - std::chrono::steady_clock::now()).count();
+    if (leftMs <= 0) {
+      res.timedOut = true;
       break;
     }
+    struct pollfd pf;
+    pf.fd = fds[0];
+    pf.events = POLLIN;
+    pf.revents = 0;
+    // Poll in <=1s slices so a stalled child is still caught by the deadline
+    // even if the machine's clock moves.
+    int pr = poll(&pf, 1, (int)std::min<long long>(leftMs, 1000));
+    if (pr < 0) {
+      if (errno == EINTR) continue;
+      break;
+    }
+    if (pr == 0) continue;
+    ssize_t n = read(fds[0], buf, sizeof buf);
+    if (n < 0) {
+      if (errno == EINTR) continue;
+      break;
+    }
+    if (n == 0) break;  // EOF: the command finished
+    if (!truncated) {
+      out.append(buf, (size_t)n);
+      if (out.size() > cap) {
+        out.resize(cap);
+        truncated = true;
+      }
+    }
+    // Once truncated we keep reading and drop the bytes: stopping early would
+    // leave the child blocked on a full pipe, and the waitpid below would hang.
   }
-  int raw = pclose(p);
-  // pclose() 返回的是 wait status，退出码在高字节：不拆的话 `exit 3` 会变成
-  // 768（Windows 的 _pclose 直接给退出码，所以这坑只在 POSIX 侧）。
-  res.exitCode = WIFEXITED(raw) ? WEXITSTATUS(raw) : -1;
-  res.out = out + (truncated ? "\n...[truncated]" : "");
+  close(fds[0]);
+
+  if (res.timedOut) ::kill(pid, SIGKILL);
+  int status = 0;
+  while (waitpid(pid, &status, 0) < 0 && errno == EINTR) {
+  }
+  // wait() 状态的高字节才是退出码，不拆的话 `exit 3` 会读成 768。
+  res.exitCode = WIFEXITED(status) ? WEXITSTATUS(status) : -1;
+  if (truncated) res.out = out + "\n...[truncated]";
+  else res.out = out + (res.timedOut ? "\n...[timed out]" : "");
   return res;
 }
 #endif

@@ -127,6 +127,41 @@ int main() {
   CHECK(out.find("\"ok\":false") != std::string::npos);
   CHECK(out.find("\"exit_code\":3") != std::string::npos);
 
+  // shell_exec: exit code must be the code, not the raw wait status (POSIX
+  // pclose/waitpid return 768 for `exit 3` unless it is shifted).
+  out = reg.run("shell_exec", "{\"command\":\"exit 3\"}");
+  CHECK(out.find("\"exit_code\":3") != std::string::npos);
+
+  // shell_exec: timeout_ms really stops a long-running command instead of
+  // blocking until it finishes.
+#if defined(_WIN32)
+  out = reg.run("shell_exec",
+                "{\"command\":\"ping -n 30 127.0.0.1 >nul 2>&1\",\"timeout_ms\":400}");
+#else
+  out = reg.run("shell_exec", "{\"command\":\"sleep 30\",\"timeout_ms\":400}");
+#endif
+  CHECK(out.find("\"timed_out\":true") != std::string::npos);
+
+  // shell_exec: output past max_chars still has to be drained from the pipe.
+  // Reading only up to the cap leaves the child blocked on a full pipe buffer,
+  // which reads back as a timeout for a command that would have finished.
+  {
+    std::string huge;
+    for (int i = 0; i < 2000; i++) huge += "0123456789";  // 20 kB > pipe buffer
+    reg.run("file_write",
+            "{\"path\":\"agent_test_tmp_huge.txt\",\"content\":\"" + huge + "\"}");
+#if defined(_WIN32)
+    out = reg.run("shell_exec",
+                  "{\"command\":\"type agent_test_tmp_huge.txt\",\"max_chars\":50,\"timeout_ms\":5000}");
+#else
+    out = reg.run("shell_exec",
+                  "{\"command\":\"cat agent_test_tmp_huge.txt\",\"max_chars\":50,\"timeout_ms\":5000}");
+#endif
+    CHECK(out.find("\"truncated\":true") != std::string::npos);
+    CHECK(out.find("\"timed_out\":false") != std::string::npos);
+    std::remove("agent_test_tmp_huge.txt");
+  }
+
   // remember / recall lesson memory (out/lessons.md in cwd)
   std::remove("out/lessons.md");
   out = reg.run("remember", "{\"lesson\":\"Always verify after editing.\"}");

@@ -13,7 +13,7 @@ Ember @VERSION@ — Linux x86-64（无 AVX2 要求）
   mkdir -p ~/ember && cp ember-@VERSION@-linux-x86_64.tar.gz ~/ember/
   cd ~/ember && tar xzf ember-@VERSION@-linux-x86_64.tar.gz
   cd ember-@VERSION@-linux-x86_64
-  chmod +x ember verify.sh test_*        # U 盘（FAT32）不带执行位，拷到硬盘再 chmod
+  chmod +x ember verify.sh test_* plugin_echo mcp_echo   # U 盘（FAT32）不带执行位，拷到硬盘再 chmod
   ./ember --version
   sh verify.sh                           # 一屏告诉你这台机器上行不行（不联网、不要 API key）
 

@@ -1,9 +1,11 @@
 # Line-ending rules that matter for this repo:
 # verify.sh ships inside the Linux package and dies with a stray \r, so it must
 # never be checked out with CRLF. PowerShell scripts are the opposite (Windows).
+# README-linux.txt is read on the Linux box too, so it stays LF as well.
 *.sh   text eol=lf
 *.ps1  text eol=crlf
 *.cmd  text eol=crlf
+README-linux.txt text eol=lf
 *.exe  binary
 *.zip  binary
 *.gz   binary

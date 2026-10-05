@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Ember",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "identifier": "dev.ember.desktop",
   "build": {
     "frontendDist": "../dist",

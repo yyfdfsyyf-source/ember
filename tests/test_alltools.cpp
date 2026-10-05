@@ -127,6 +127,11 @@ struct MiniServer {
     while (!stop) {
       SOCKET c = accept(srv, nullptr, nullptr);
       if (c == INVALID_SOCKET) break;
+      // A client that connects and says nothing would otherwise block recv()
+      // forever, and ~MiniServer's join() with it.
+      DWORD to = 2000;
+      setsockopt(c, SOL_SOCKET, SO_RCVTIMEO, (char*)&to, sizeof to);
+      setsockopt(c, SOL_SOCKET, SO_SNDTIMEO, (char*)&to, sizeof to);
       std::string req;
       char buf[4096];
       while (req.find("\r\n\r\n") == std::string::npos) {
