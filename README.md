@@ -134,10 +134,10 @@ connections.
 
 ## Releases
 
-The pre-built packages are committed in-tree under
-[`releases/`](releases/), so no asset hosting is involved; the tagged
-[GitHub Release](https://github.com/yyfdfsyyf-source/ember/releases/latest) page
-carries the changelog.
+Grab the packages from the
+[latest GitHub Release](https://github.com/yyfdfsyyf-source/ember/releases/latest);
+the same bytes are also committed in-tree under
+[`releases/`](releases/) with the SHA256 listed in the release notes.
 
 - `Ember-<ver>-win64.zip` — unzip and run `agent.exe`
 - `ember-<ver>-linux-x86_64.tar.gz` — `tar xzf` it, `chmod +x ember verify.sh`,
