@@ -78,7 +78,10 @@ target_link_libraries(agent PRIVATE agent_core)
 
 if(WIN32)
   target_link_libraries(agent PRIVATE winhttp ws2_32)
-  target_link_libraries(agent_core PRIVATE winhttp ws2_32 uiautomationcore ole32 oleaut32 user32 gdi32)
+  # agent_core is a static library: PRIVATE dependencies would not reach the
+  # test executables that link it, so the WinHTTP/UIA/OLE import libraries have
+  # to be part of its link interface.
+  target_link_libraries(agent_core PUBLIC winhttp ws2_32 uiautomationcore ole32 oleaut32 user32 gdi32)
   if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     target_link_options(agent PRIVATE -static -static-libgcc -static-libstdc++)
     target_link_options(agent_core PRIVATE -static -static-libgcc -static-libstdc++)
@@ -86,7 +89,7 @@ if(WIN32)
 else()
   find_package(CURL REQUIRED)
   target_link_libraries(agent PRIVATE CURL::libcurl)
-  target_link_libraries(agent_core PRIVATE CURL::libcurl)
+  target_link_libraries(agent_core PUBLIC CURL::libcurl)
 endif()
 
 # ---------------------------------------------------------------------------
@@ -125,10 +128,17 @@ foreach(src ${TEST_SOURCES})
      OR name STREQUAL "test_plugins" OR name STREQUAL "test_mcp"
      OR name STREQUAL "test_patch" OR name STREQUAL "test_search"
      OR name STREQUAL "test_session" OR name STREQUAL "test_rag"
-     OR name STREQUAL "test_browser" OR name STREQUAL "test_alltools")
+     OR name STREQUAL "test_browser" OR name STREQUAL "test_alltools"
+     OR name STREQUAL "test_desktop" OR name STREQUAL "test_inputflow")
     target_link_libraries(${name} PRIVATE agent_core)
   else()
     target_link_libraries(${name} PRIVATE tui)
+  endif()
+  if(name STREQUAL "test_inputflow")
+    # It pokes at App's privates, so the app unit has to be linked in (it lives
+    # in the agent executable, not in agent_core). Same special case as build.ps1.
+    target_sources(${name} PRIVATE agent/src/app.cpp)
+    target_compile_definitions(${name} PRIVATE EMBER_VERSION=${EMBER_VERSION})
   endif()
   target_compile_options(${name} PRIVATE ${TUI_WARNINGS})
   add_test(NAME ${name} COMMAND ${name})
